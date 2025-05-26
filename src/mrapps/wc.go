@@ -16,8 +16,12 @@ import "strconv"
 // file's complete contents. You should ignore the input file name,
 // and look only at the contents argument. The return value is a slice
 // of key/value pairs.
+// 注：Map输入一个文本，返回列表 [{"Apple","1"},{"Apple","1"},{"Pair","1"}]
 func Map(filename string, contents string) []mr.KeyValue {
 	// function to detect word separators.
+	// 注：rune是unicode的码点类型。Unicode 码点是 Unicode 标准中为每一个字符分配的唯一编号，
+	// 用于统一表示世界上各种语言中的字符、符号、表情等。
+	// 注：ff是根据码点判断字符是否是字母。若 r 并非字母，函数就会返回 true，这表明该字符属于分隔符。
 	ff := func(r rune) bool { return !unicode.IsLetter(r) }
 
 	// split contents into an array of words.
