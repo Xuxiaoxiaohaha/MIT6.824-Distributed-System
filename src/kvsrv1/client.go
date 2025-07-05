@@ -2,6 +2,7 @@ package kvsrv
 
 import (
 	"log"
+	"time"
 
 	"6.5840/kvsrv1/rpc"
 	kvtest "6.5840/kvtest1"
@@ -38,7 +39,7 @@ func (ck *Clerk) Get(key string) (string, rpc.Tversion, rpc.Err) {
 		if ok && (reply.Err == rpc.OK || reply.Err == rpc.ErrNoKey) {
 			return reply.Value, reply.Version, reply.Err
 		}
-		// time.Sleep(500 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 
 }
@@ -73,7 +74,7 @@ func (ck *Clerk) Put(key, value string, version rpc.Tversion) rpc.Err {
 			log.Printf("client put connect err \n")
 			firstAttempt = false
 		}
-		// time.Sleep(500 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	if !firstAttempt && reply.Err == rpc.ErrVersion {
 		return rpc.ErrMaybe
