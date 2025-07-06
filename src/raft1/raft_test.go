@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"6.5840/tester1"
+	tester "6.5840/tester1"
 )
 
 // The tester generously allows solutions to complete elections in one second
@@ -61,11 +61,12 @@ func TestReElection3A(t *testing.T) {
 
 	tester.AnnotateTest("TestReElection3A", servers)
 	ts.Begin("Test (3A): election after network failure")
-
 	leader1 := ts.checkOneLeader()
 
 	// if the leader disconnects, a new one should be elected.
 	ts.g.DisconnectAll(leader1)
+	DPrintf("S%d 发生分区", leader1)
+
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 
@@ -73,6 +74,7 @@ func TestReElection3A(t *testing.T) {
 	// disturb the new leader. and the old leader
 	// should switch to follower.
 	ts.g.ConnectOne(leader1)
+	DPrintf("S%d 并入原来分区", leader1)
 	tester.AnnotateConnection(ts.g.GetConnected())
 	leader2 := ts.checkOneLeader()
 
@@ -80,6 +82,9 @@ func TestReElection3A(t *testing.T) {
 	// be elected.
 	ts.g.DisconnectAll(leader2)
 	ts.g.DisconnectAll((leader2 + 1) % servers)
+	DPrintf("S%d 发生分区", leader2)
+	DPrintf("S%d 发生分区", (leader2+1)%servers)
+	DPrintf("此时3个独立分区")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	time.Sleep(2 * RaftElectionTimeout)
 
@@ -89,11 +94,13 @@ func TestReElection3A(t *testing.T) {
 
 	// if a quorum arises, it should elect a leader.
 	ts.g.ConnectOne((leader2 + 1) % servers)
+	DPrintf("S%d 并入原来分区", (leader2+1)%servers)
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 
 	// re-join of last node shouldn't prevent leader from existing.
 	ts.g.ConnectOne(leader2)
+	DPrintf("S%d 并入原来分区", leader2)
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 }
@@ -118,7 +125,7 @@ func TestManyElections3A(t *testing.T) {
 		ts.g.DisconnectAll(i2)
 		ts.g.DisconnectAll(i3)
 		tester.AnnotateConnection(ts.g.GetConnected())
-
+		DPrintf("S%d,S%d,S%d 发生分区", i1, i2, i3)
 		// either the current leader should still be alive,
 		// or the remaining four should elect a new one.
 		ts.checkOneLeader()
@@ -126,6 +133,7 @@ func TestManyElections3A(t *testing.T) {
 		ts.g.ConnectOne(i1)
 		ts.g.ConnectOne(i2)
 		ts.g.ConnectOne(i3)
+		DPrintf("S%d,S%d,S%d 恢复分区", i1, i2, i3)
 		tester.AnnotateConnection(ts.g.GetConnected())
 	}
 	ts.checkOneLeader()
